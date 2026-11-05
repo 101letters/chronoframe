@@ -1357,11 +1357,16 @@
     "storage": {
       "thumbnailProvider": {
         "label": "縮圖儲存提供者",
-        "description": "用於縮圖嘅儲存連線 ID。留空會使用相片原圖嘅儲存連線。"
+        "description": "用於縮圖嘅儲存連線。選擇「跟隨原圖」會使用相片原圖嘅儲存連線。",
+        "source": "跟隨原圖儲存"
       },
       "thumbnailPrefix": {
         "label": "縮圖路徑前綴",
         "description": "新產生縮圖使用嘅目錄前綴。留空會儲存喺 Provider 根目錄。"
+      },
+      "thumbnailSettings": {
+        "title": "縮圖儲存",
+        "description": "為縮圖指定獨立嘅儲存連線同路徑前綴。"
       },
       "name": {
         "label": "配置名稱",

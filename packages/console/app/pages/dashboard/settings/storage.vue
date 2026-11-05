@@ -14,6 +14,44 @@ useHead({
 
 const toast = useToast()
 const { t } = useI18n()
+const {
+  fields: thumbnailSettingsFields,
+  state: thumbnailSettings,
+  submit: submitThumbnailSettings,
+  loading: thumbnailSettingsLoading,
+} = useSettingsForm('storage')
+const thumbnailProviderSelection = computed({
+  get: () => thumbnailSettings.thumbnailProvider == null
+    ? 'source'
+    : String(thumbnailSettings.thumbnailProvider),
+  set: (value: string) => {
+    thumbnailSettings.thumbnailProvider = value === 'source' ? null : Number(value)
+  },
+})
+const thumbnailProviderOptions = computed(() => [
+  { label: t('settings.storage.thumbnailProvider.source'), value: 'source' },
+  ...(availableStorage.value || []).map((storage) => ({
+    label: `${storage.name} (${t(`settings.storage.providers.${storage.provider}`)})`,
+    value: String(storage.id),
+  })),
+])
+const thumbnailSettingsDirty = computed(() => {
+  const fields = ['thumbnailProvider', 'thumbnailPrefix']
+  return fields.some((key) => {
+    const field = thumbnailSettingsFields.value.find((item) => item.key === key)
+    return JSON.stringify(thumbnailSettings[key] ?? null) !== JSON.stringify(field?.value ?? field?.defaultValue ?? null)
+  })
+})
+const saveThumbnailSettings = async () => {
+  try {
+    await submitThumbnailSettings({
+      thumbnailProvider: thumbnailSettings.thumbnailProvider,
+      thumbnailPrefix: thumbnailSettings.thumbnailPrefix,
+    })
+  } catch {
+    // The composable displays the save error.
+  }
+}
 
 const {
   data: currentStorageProvider,
@@ -546,6 +584,58 @@ const confirmStorageDelete = async () => {
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
             {{ $t('settings.storage.sectionDescription') }}
           </p>
+        </section>
+
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+            <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+              {{ $t('settings.storage.thumbnailSettings.title') }}
+            </h3>
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              {{ $t('settings.storage.thumbnailSettings.description') }}
+            </p>
+          </header>
+          <UForm
+            id="thumbnailStorageSettingsForm"
+            class="space-y-5 px-5 py-5"
+            @submit="saveThumbnailSettings"
+          >
+            <UFormField
+              :label="$t('settings.storage.thumbnailProvider.label')"
+              :description="$t('settings.storage.thumbnailProvider.description')"
+            >
+              <USelect
+                v-model="thumbnailProviderSelection"
+                class="w-full"
+                :items="thumbnailProviderOptions"
+                value-key="value"
+                :disabled="thumbnailSettingsLoading"
+              />
+            </UFormField>
+            <UFormField
+              :label="$t('settings.storage.thumbnailPrefix.label')"
+              :description="$t('settings.storage.thumbnailPrefix.description')"
+            >
+              <UInput
+                v-model="thumbnailSettings.thumbnailPrefix"
+                class="w-full"
+                :disabled="thumbnailSettingsLoading"
+              />
+            </UFormField>
+          </UForm>
+          <footer class="flex justify-end border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+            <UButton
+              :loading="thumbnailSettingsLoading"
+              :disabled="!thumbnailSettingsDirty"
+              type="submit"
+              form="thumbnailStorageSettingsForm"
+              icon="tabler:device-floppy"
+            >
+              {{ $t('common.actions.saveSettings') }}
+            </UButton>
+          </footer>
         </section>
 
         <section

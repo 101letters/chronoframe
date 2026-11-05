@@ -1435,11 +1435,16 @@
     "storage": {
       "thumbnailProvider": {
         "label": "缩略图存储提供者",
-        "description": "用于缩略图的存储连接 ID。留空则使用照片原图的存储连接。"
+        "description": "用于缩略图的存储连接。选择“跟随原图”则使用照片原图的存储连接。",
+        "source": "跟随原图存储"
       },
       "thumbnailPrefix": {
         "label": "缩略图路径前缀",
         "description": "新生成缩略图使用的目录前缀。留空则存储在 Provider 根目录。"
+      },
+      "thumbnailSettings": {
+        "title": "缩略图存储",
+        "description": "单独指定缩略图使用的存储连接和目录前缀。"
       },
       "name": {
         "label": "配置名称",
