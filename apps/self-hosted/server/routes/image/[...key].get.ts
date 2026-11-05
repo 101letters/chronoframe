@@ -1,4 +1,4 @@
-import { storageForPhoto } from '../../utils/object-storage'
+import { storageForPhoto, storageForThumbnail } from '../../utils/object-storage'
 import { and as siteAnd, eq as siteEq } from 'drizzle-orm'
 import { DEFAULT_SITE } from '@chronoframe/core'
 import { serveLocalMedia } from '../../utils/local-media'
@@ -45,7 +45,9 @@ export default eventHandler(async (event) => {
       throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
     }
     const restricted = await assertPhotoAccess(event, photo.id)
-    storageProvider = await storageForPhoto(photo.id, storageProvider)
+    storageProvider = kind === 'thumbnail'
+      ? await storageForThumbnail(photo, storageProvider)
+      : await storageForPhoto(photo.id, storageProvider)
 
     const targetUrl =
       kind === 'original'

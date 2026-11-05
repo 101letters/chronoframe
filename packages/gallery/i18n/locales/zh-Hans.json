@@ -1433,6 +1433,14 @@
       "sectionDescription": "管理照片上传时的数据隐私策略。建议在公开站点启用位置信息抹除。"
     },
     "storage": {
+      "thumbnailProvider": {
+        "label": "缩略图存储提供者",
+        "description": "用于缩略图的存储连接 ID。留空则使用照片原图的存储连接。"
+      },
+      "thumbnailPrefix": {
+        "label": "缩略图路径前缀",
+        "description": "新生成缩略图使用的目录前缀。留空则存储在 Provider 根目录。"
+      },
       "name": {
         "label": "配置名称",
         "description": "存储提供者配置的名称"

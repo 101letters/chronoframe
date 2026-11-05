@@ -28,7 +28,9 @@ export function toPhotoDto(photo: PhotoRow): Photo {
         ? `/image/__photo__/${encodeURIComponent(photo.id)}/original`
         : photo.originalUrl,
     thumbnailUrl:
-      photo.storageConnectionId != null && photo.thumbnailUrl
+      (photo.thumbnailStorageConnectionId ?? photo.storageConnectionId) !=
+        null &&
+      photo.thumbnailUrl
         ? `/image/__photo__/${encodeURIComponent(photo.id)}/thumbnail`
         : photo.thumbnailUrl,
     thumbnailHash: photo.thumbnailHash,

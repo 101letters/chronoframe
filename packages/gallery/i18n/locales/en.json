@@ -1437,6 +1437,14 @@
       "sectionDescription": "Manage data privacy policies for photo uploads. It is recommended to enable location data removal on public sites."
     },
     "storage": {
+      "thumbnailProvider": {
+        "label": "Thumbnail storage provider",
+        "description": "Storage connection ID for thumbnails. Leave empty to use the photo's storage connection."
+      },
+      "thumbnailPrefix": {
+        "label": "Thumbnail path prefix",
+        "description": "Folder prefix for newly generated thumbnails. Leave empty to store them at the provider root."
+      },
       "name": {
         "label": "Provider Name",
         "description": "Name of the storage provider configuration"

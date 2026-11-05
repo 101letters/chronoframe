@@ -229,6 +229,11 @@ export function createSqlitePhotoWriteRepository(
       connectionId: photo.storageConnectionId,
       revision: photo.storageRevision,
     },
+    thumbnailStorageReference: {
+      connectionId:
+        photo.thumbnailStorageConnectionId ?? photo.storageConnectionId,
+      revision: photo.thumbnailStorageRevision ?? photo.storageRevision,
+    },
   })
   return {
     async get(id) {

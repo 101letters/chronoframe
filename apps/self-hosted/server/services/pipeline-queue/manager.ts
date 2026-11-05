@@ -163,7 +163,50 @@ export class QueueManager {
     const provider = await storageForReference(lease, () =>
       getStorageManager().getProvider(),
     )
+    const thumbnailProviderSetting = await settingsManager.get<number>(
+      'storage',
+      'thumbnailProvider',
+    )
+    const thumbnailProviderConfig = thumbnailProviderSetting
+      ? await settingsManager.storage.getProviderById(thumbnailProviderSetting)
+      : null
+    if (thumbnailProviderSetting && !thumbnailProviderConfig)
+      throw new Error('Thumbnail storage connection was not found')
+    const thumbnailProviderRevision = thumbnailProviderSetting
+      ? (useDB()
+          .select({ revision: tables.settings_storage_providers.revision })
+          .from(tables.settings_storage_providers)
+          .where(
+            and(
+              eq(tables.settings_storage_providers.id, thumbnailProviderSetting),
+              eq(tables.settings_storage_providers.siteId, DEFAULT_SITE.id),
+            ),
+          )
+          .get()?.revision ?? lease.storageRevision)
+      : lease.storageRevision
+    const thumbnailStorageRevision =
+      thumbnailProviderRevision
+    const thumbnailReference = thumbnailProviderSetting
+      ? await storageForReference(
+          {
+            storageConnectionId: thumbnailProviderSetting,
+            storageRevision: thumbnailStorageRevision,
+          },
+          provider,
+        )
+      : provider
+    const thumbnailPrefix =
+      (await settingsManager.get<string>('storage', 'thumbnailPrefix')) ??
+      '.generated'
+    const cleanThumbnailPrefix = thumbnailPrefix
+      .replace(/\\/g, '/')
+      .split('/')
+      .filter((part) => part && part !== '.' && part !== '..')
+      .join('/')
+    if (thumbnailPrefix && !cleanThumbnailPrefix)
+      throw new Error('Invalid thumbnail storage prefix')
     const generated = new Set<string>(),
+      generatedThumbnails = new Set<string>(),
       linked = new Set<string>()
     const namespace = `.generated/${lease.siteId}/${lease.id}/${lease.sourceVersion}/${lease.attemptId}/`
     let published = false
@@ -178,14 +221,32 @@ export class QueueManager {
               .split('/')
               .filter((part) => part && part !== '.' && part !== '..')
               .join('/')
-            const object = await target.create(
-              namespace + safe,
+            const isThumbnail = safe.startsWith('thumbnails/')
+            const outputProvider = isThumbnail ? thumbnailReference : target
+            const thumbnailKey = [
+              cleanThumbnailPrefix,
+              String(lease.siteId),
+              lease.resourceId,
+              String(lease.sourceVersion),
+              path.posix.basename(safe),
+            ]
+              .filter(Boolean)
+              .join('/')
+            const object = await outputProvider.create(
+              isThumbnail ? thumbnailKey : namespace + safe,
               buffer,
               contentType,
             )
             generated.add(object.key)
+            if (isThumbnail) generatedThumbnails.add(object.key)
             return object
           }
+        if (property === 'getPublicUrl')
+          return (key: string) =>
+            (generatedThumbnails.has(key)
+              ? thumbnailReference
+              : target
+            ).getPublicUrl(key)
         if (property === 'delete' || property === 'createFromFile')
           return () =>
             Promise.reject(
@@ -252,7 +313,11 @@ export class QueueManager {
           sourceKey: payload.storageKey,
           generatedKeys: generated,
           linkedVideoKeys: linked,
-          publicUrl: (key) => provider.getPublicUrl(key),
+          publicUrl: (key) =>
+            (generatedThumbnails.has(key)
+              ? thumbnailReference
+              : provider
+            ).getPublicUrl(key),
         })
         await verifySource(payload.storageKey, sourceHash)
         let warning: QueueWarningCode | null = null
@@ -268,6 +333,9 @@ export class QueueManager {
                 siteId: lease.siteId,
                 storageConnectionId: lease.storageConnectionId,
                 storageRevision: lease.storageRevision,
+                thumbnailStorageConnectionId:
+                  thumbnailProviderSetting ?? lease.storageConnectionId,
+                thumbnailStorageRevision,
                 sourceVersion: lease.sourceVersion,
               },
               payload.albumId,
@@ -497,7 +565,7 @@ export class QueueManager {
     } finally {
       if (!published)
         for (const key of generated)
-          await provider
+          await (generatedThumbnails.has(key) ? thumbnailReference : provider)
             .delete(key)
             .catch((error) =>
               this.logger.warn(

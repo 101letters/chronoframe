@@ -241,6 +241,15 @@ export const SYSTEM_SETTINGS_UI: Record<string, FieldUIConfig> = {
 }
 
 export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
+  thumbnailProvider: {
+    type: 'number',
+    help: 'settings.storage.thumbnailProvider.description',
+  },
+  thumbnailPrefix: {
+    type: 'input',
+    placeholder: '.generated',
+    help: 'settings.storage.thumbnailPrefix.description',
+  },
   provider: {
     type: 'custom',
     options: [

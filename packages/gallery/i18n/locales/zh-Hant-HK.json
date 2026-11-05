@@ -1355,6 +1355,14 @@
       "sectionDescription": "管理相片上傳時的資料隱私策略。建議在公開站點啟用位置資訊抹除。"
     },
     "storage": {
+      "thumbnailProvider": {
+        "label": "縮圖儲存提供者",
+        "description": "用於縮圖嘅儲存連線 ID。留空會使用相片原圖嘅儲存連線。"
+      },
+      "thumbnailPrefix": {
+        "label": "縮圖路徑前綴",
+        "description": "新產生縮圖使用嘅目錄前綴。留空會儲存喺 Provider 根目錄。"
+      },
       "name": {
         "label": "配置名稱",
         "description": "儲存提供者配置嘅名稱"

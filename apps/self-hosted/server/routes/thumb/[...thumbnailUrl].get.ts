@@ -1,4 +1,4 @@
-import { storageForPhoto } from '../../utils/object-storage'
+import { storageForPhoto, storageForThumbnail } from '../../utils/object-storage'
 import { and as siteAnd, eq as siteEq } from 'drizzle-orm'
 import { DEFAULT_SITE } from '@chronoframe/core'
 import { readFile } from 'node:fs/promises'
@@ -63,7 +63,11 @@ export default eventHandler(async (event) => {
           : row?.thumbnailUrl
     if (!resourceUrl)
       throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
-    storageProvider = await storageForPhoto(accessKey, storageProvider)
+    storageProvider = kind === 'original'
+      ? await storageForPhoto(accessKey, storageProvider)
+      : kind === 'live'
+        ? await storageForPhoto(accessKey, storageProvider)
+        : await storageForThumbnail(row!, storageProvider)
     url = resourceUrl
     isAppPath = url.startsWith('/storage/') || url.startsWith('/image/')
   }

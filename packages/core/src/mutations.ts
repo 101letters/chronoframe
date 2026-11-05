@@ -156,6 +156,7 @@ export type PhotoRecord = Photo & {
   mutationVersion?: number
   originalDerivedKey?: string | null
   storageReference?: { connectionId: number | null; revision: number }
+  thumbnailStorageReference?: { connectionId: number | null; revision: number }
 }
 export interface PhotoWriteRepository {
   get(id: string): Promise<PhotoRecord | null>
@@ -173,6 +174,7 @@ export interface PhotoObjectStorage {
 }
 export interface StorageResolver {
   forPhoto(photo: PhotoRecord): Promise<PhotoObjectStorage>
+  forThumbnail?(photo: PhotoRecord): Promise<PhotoObjectStorage>
 }
 export interface PhotoTaskDispatcher {
   reverseGeocode(
@@ -311,11 +313,14 @@ export function createPhotoWriter(deps: {
       if (match && !photo.originalDerivedKey)
         keys.push(photo.storageKey!.slice(0, -match[0].length) + '.jpeg')
       const storage = await deps.storage.forPhoto(photo)
+      const thumbnailStorage = deps.storage.forThumbnail
+        ? await deps.storage.forThumbnail(photo)
+        : storage
       for (const key of new Set(
         keys.filter((key): key is string => Boolean(key)),
       )) {
         try {
-          await storage.delete(key)
+          await (key === photo.thumbnailKey ? thumbnailStorage : storage).delete(key)
         } catch (error) {
           deps.warn(error, 'delete-photo-object')
         }

@@ -314,6 +314,22 @@ export const DEFAULT_SETTINGS = [
     label: 'settings.storage_provider.provider.label',
     description: 'settings.storage_provider.provider.description',
   },
+  {
+    namespace: 'storage',
+    key: 'thumbnailProvider',
+    type: 'number',
+    defaultValue: null,
+    label: 'settings.storage.thumbnailProvider.label',
+    description: 'settings.storage.thumbnailProvider.description',
+  },
+  {
+    namespace: 'storage',
+    key: 'thumbnailPrefix',
+    type: 'string',
+    defaultValue: '.generated',
+    label: 'settings.storage.thumbnailPrefix.label',
+    description: 'settings.storage.thumbnailPrefix.description',
+  },
   // NAMESPACE: analytics
   {
     namespace: 'analytics',

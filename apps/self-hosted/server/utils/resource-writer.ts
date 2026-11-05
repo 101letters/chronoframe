@@ -1,5 +1,8 @@
 import { persistenceErrorCode } from '@chronoframe/database'
-import { storageForPhoto, storageForReference } from './object-storage'
+import {
+  storageForPhoto,
+  storageForReference,
+} from './object-storage'
 import { DEFAULT_SITE } from '@chronoframe/core'
 import type {} from '../types/worker'
 import { createError, type H3Event } from 'h3'
@@ -44,6 +47,24 @@ export function usePhotoWriter(event: H3Event) {
               storageProvider,
             )
           : storageForPhoto(photo.id, storageProvider),
+      forThumbnail: (photo) =>
+        photo.thumbnailStorageReference
+          ? storageForReference(
+              {
+                storageConnectionId: photo.thumbnailStorageReference.connectionId,
+                storageRevision: photo.thumbnailStorageReference.revision,
+              },
+              storageProvider,
+            )
+          : photo.storageReference
+            ? storageForReference(
+                {
+                  storageConnectionId: photo.storageReference.connectionId,
+                  storageRevision: photo.storageReference.revision,
+                },
+                storageProvider,
+              )
+            : storageForPhoto(photo.id, storageProvider),
     },
     editMetadata: async (photo, input) => {
       if (!photo.storageKey)

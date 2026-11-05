@@ -62,6 +62,8 @@ export const photos = sqliteTable(
     originalDerivedKey: text('original_derived_key'),
     storageConnectionId: integer('storage_connection_id'),
     storageRevision: integer('storage_revision').notNull().default(1),
+    thumbnailStorageConnectionId: integer('thumbnail_storage_connection_id'),
+    thumbnailStorageRevision: integer('thumbnail_storage_revision'),
     sourceVersion: integer('source_version').notNull().default(1),
     siteId: siteColumn(),
     id: text('id').primaryKey().unique(),

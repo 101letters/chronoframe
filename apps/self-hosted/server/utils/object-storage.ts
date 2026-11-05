@@ -43,3 +43,23 @@ export async function storageForPhoto(id: string, fallback: StorageProvider) {
     throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
   return storageForReference(reference, fallback)
 }
+
+export async function storageForThumbnail(
+  reference: {
+    storageConnectionId: number | null
+    storageRevision: number
+    thumbnailStorageConnectionId?: number | null
+    thumbnailStorageRevision?: number | null
+  },
+  fallback: StorageProvider,
+) {
+  return storageForReference(
+    {
+      storageConnectionId:
+        reference.thumbnailStorageConnectionId ?? reference.storageConnectionId,
+      storageRevision:
+        reference.thumbnailStorageRevision ?? reference.storageRevision,
+    },
+    fallback,
+  )
+}
